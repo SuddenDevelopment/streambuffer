@@ -1,0 +1,19 @@
+{
+  "name": "streambuffer",
+  "version": "1.0.0",
+  "description": "buffer data streams and trickle them to an array",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SuddenDevelopment/streambuffer.git"
+  },
+  "author": "Anthony Aragues",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SuddenDevelopment/streambuffer/issues"
+  },
+  "homepage": "https://github.com/SuddenDevelopment/streambuffer#readme"
+}
