@@ -2,7 +2,7 @@
 // If there is new bursty data, buffer it, allow different views within it. keep caps and stuff in mind and high performance
 // If there is no new data, trickle buffered data into view, direction of trickle based on on position of the view
 // eval the above 2 things at a user defined interval
-//should i use copywithin instead of splice?
+// for performance, a fixed size array is used for the cache and edited by positon as much as possible
 //----===================----\\
 var streambuffer = function(objConfig){ 'use strict'; var self=this;
 //----====|| CONFIG ||====----\\
@@ -23,7 +23,7 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 		if(typeof objConfig.newest==='undefined'){objConfig.newest=false;}
 		if(typeof objConfig.oldest==='undefined'){objConfig.oldest=false;}
 		if(typeof objConfig.stream==='undefined'){objConfig.stream=true;}
-		if(typeof objConfig.fnEndRecords==='undefined'){objConfig.fnEndRecords=function(){console.log('no more records to stream in');}}
+		if(typeof objConfig.fnEndRecords==='undefined'){ objConfig.fnEndRecords=function(){console.log('no more records to stream in');}; }
 	}
 	if(objConfig.newest!==false){ 
 			this.newest={}; 
@@ -37,8 +37,9 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 	}
 //----====|| PRIVATE ||====----\\
 	//create the primary array for the cache, using a fixed length for speed/memory efficiency
-	this.arrCache = new Array(objConfig.size);
+	var i=0;
 //----====|| PROPERTIES ||====----\\
+	this.arrCache = new Array(objConfig.size);
 	this.config = objConfig;
 	this.stats = {total:0,current:0,last:0,count:0,avg:0,tsUpdated:0};
 	this.tsFirst = 0;
@@ -57,7 +58,7 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 		self.stats.avg=self.stats.total/self.stats.count;
 		self.tsLast=Date.now();
 		//if there is more than the limit, just trim and set it as the cache
-		if(intCount >= self.config.size){ arrData.splice(self.config.size); self.arrCache=arrData; }
+		if(intCount >= self.config.size){ for(i=0;i<self.config.size;i++){ self.arrCache[i]=arrData[i]; }}
 		//if it's one record, just do it
 		else if(intCount === 1){ self.arrCache.pop(); self.arrCache.unshift(arrData[0]); }
 		//otherwise need to move some chunks around
@@ -65,7 +66,10 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 			//decide how many records will be kept after new ones are inserted.
 			var intKeep = self.config.size-intCount;
 			//create the new array from what's new and what's kept
-			self.arrCache = arrData.concat(self.arrCache.splice(0,intKeep));
+			//move the records we are keeping
+			for(i=0;i<intKeep;i++){ self.arrCache[intKeep-i]=arrData[i]; }
+			//add in the new ones
+			for(i=0;i<intCount;i++){ self.arrCache[i]=arrData[i]; }
 		}
 		//need to set each of the views based on their defined positions
 			//set the by position
@@ -92,37 +96,37 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 	var fnSetViews=function(arrData){
 		//console.log('set views');
 		//verify there's room to advance the records
-		if(arrData.length===0 && self.stats.total > self.newest.size+self.travel+1){ 
-			//console.log(self.newest.data);
-			self.travel++; 
-			//intMove=self.travel; 
-		}
+		var intCount=arrData.length;
+		if(intCount===0 && self.stats.total > self.newest.size+self.travel+1){ self.travel++; }
+		else if(intCount > 0){ self.travel=0; }
 		//no more data to show, so leave buffer where they are
 		if(arrData.length===0 && self.travel===0 && self.config.stream===true){ 
 			//console.log('EOF');
 			self.config.fnEndRecords(); 
 			self.config.stream=false; 
-		}
-		else{
+		}else{
 			if(self.newest!==false){ 
 				if(self.stats.total < self.newest.size){ 
-					///console.log('set newest to incoming data, total smaller than view');
-					self.newest.data=self.arrCache.slice(0,self.stats.total); 
+					for(i=0;i<self.stats.total;i++){ 
+						//if(self.arrCache[i]==='undefined'){console.log('1 undefined: ',i);}
+						self.newest.data[i]=self.arrCache[i];
+					} 
 				}
 				else{ 
-					for(i=0;i<self.newest.size;i++){ self.newest.data[i]=self.arrCache[i+self.travel]; }
-					//self.newest.data=self.arrCache.slice(self.travel,self.newest.size+self.travel); 
-					//console.log(self.newest.data,self.travel,self.newest.size+self.travel,self.arrCache.length);
+					for(i=0;i<self.newest.size;i++){ 
+						//if(self.arrCache[i]==='undefined'){console.log('2 undefined: ',i);}
+						self.newest.data[i]=self.arrCache[i+self.travel]; 
+					} 
 				}
 			}
 			if(self.config.oldest!==false){
-				if(self.stats.total < self.oldest.size){ self.oldest.data=self.arrCache.slice(0,self.stats.total); }
-				else if(self.stats.total < self.config.size){ self.oldest.data=self.arrCache.slice(self.stats.total-self.oldest.size+self.travel,self.oldest.size+self.travel); }
-				else{ self.oldest.data=self.arrCache.slice(self.config.size-self.oldest.size+self.travel); }	 
+				if(self.stats.total < self.oldest.size){ for(i=0;i<self.stats.total;i++){ self.oldest.data[i]=self.arrCache[self.stats.total-i]; } }
+				else if(self.stats.total < self.config.size){ for(i=0;i<self.oldest.size;i++){ self.oldest.data[i]=self.arrCache[self.stats.total-(i+self.travel)]; } }
+				else{ for(i=0;i<self.oldest.size;i++){ self.oldest.data[i]=self.arrCache[self.config.size-(i+self.travel)]; } }
 			}
 		}
-	};
-	this.stop=function(){ this.config.stream=false; };
+	}
+	this.stop=function(){ this.config.stream=false; }
 	//start the trickle over with whats in cache
 	this.restart=function(){ this.travel=0; this.config.stream=true; fnStreamRecords(); }
 	this.go=function(){
