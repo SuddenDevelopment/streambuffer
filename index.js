@@ -87,7 +87,7 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 		//else{ self.travel=0; }
 		self.stats.tsUpdated=tsNow;
 		//call this function again at the set time	
-		if(self.config.stream===true){ setInterval(function(){ fnStreamRecords(); }, self.config.interval);}
+		if(self.config.stream===true){ setTimeout(function(){ fnStreamRecords(); }, self.config.interval);}
 	};
 	var fnSetViews=function(arrData){
 		//console.log('set views');
@@ -110,8 +110,8 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 					self.newest.data=self.arrCache.slice(0,self.stats.total); 
 				}
 				else{ 
-					var intEnd = self.newest.size+self.travel;
-					self.newest.data=self.arrCache.slice(self.travel,intEnd); 
+					for(i=0;i<self.newest.size;i++){ self.newest.data[i]=self.arrCache[i+self.travel]; }
+					//self.newest.data=self.arrCache.slice(self.travel,self.newest.size+self.travel); 
 					//console.log(self.newest.data,self.travel,self.newest.size+self.travel,self.arrCache.length);
 				}
 			}
