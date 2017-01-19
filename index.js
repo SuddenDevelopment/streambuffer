@@ -2,6 +2,7 @@
 // If there is new bursty data, buffer it, allow different views within it. keep caps and stuff in mind and high performance
 // If there is no new data, trickle buffered data into view, direction of trickle based on on position of the view
 // eval the above 2 things at a user defined interval
+//should i use copywithin instead of splice?
 //----===================----\\
 var streambuffer = function(objConfig){ 'use strict'; var self=this;
 //----====|| CONFIG ||====----\\
@@ -12,14 +13,17 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 			,interval:500
 			,newest:{size:20}
 			,oldest:false
+			,stream:true
 			,fnEndRecords:function(){console.log('no more records to stream in');}
 		};
 	}else{
 		//check config and add defaults
-		if(typeof objConfig.size==='undefined'){objConfig.size=20;}
+		if(typeof objConfig.size==='undefined'){objConfig.size=10000;}
 		if(typeof objConfig.interval==='undefined'){objConfig.interval=500;}
 		if(typeof objConfig.newest==='undefined'){objConfig.newest=false;}
 		if(typeof objConfig.oldest==='undefined'){objConfig.oldest=false;}
+		if(typeof objConfig.stream==='undefined'){objConfig.stream=true;}
+		if(typeof objConfig.fnEndRecords==='undefined'){objConfig.fnEndRecords=function(){console.log('no more records to stream in');}}
 	}
 	if(objConfig.newest!==false){ 
 			this.newest={}; 
@@ -78,21 +82,24 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 		//if there are new records this time around, no need to mess with advancing
 		var tsNow = Date.now();
 		//data hasnt been added since last interval so start advancing
+		//console.log(tsNow, self.config.interval, self.stats.tsUpdated+self.config.interval, self.stats.tsUpdated);
 		if(tsNow > self.stats.tsUpdated+self.config.interval && self.stats.tsUpdated!==0){ fnSetViews([]); }
-		else{ self.travel=0; }
-		self.stats.tsUpdated=Date.tsNow;
+		//else{ self.travel=0; }
+		self.stats.tsUpdated=tsNow;
 		//call this function again at the set time	
-		if(self.config.stream===true){ setInterval(function(){ fnStreamRecords(); }, self.config.interval); }
+		if(self.config.stream===true){ setInterval(function(){ fnStreamRecords(); }, self.config.interval);}
 	};
 	var fnSetViews=function(arrData){
+		//console.log('set views');
 		//verify there's room to advance the records
-		var intMove=0; if(arrData.length===0 && self.stats.total > self.newest.size+self.travel+1){ 
-			console.log('no new data,advance');
-			self.travel++; intMove=self.travel; 
+		if(arrData.length===0 && self.stats.total > self.newest.size+self.travel+1){ 
+			//console.log(self.newest.data);
+			self.travel++; 
+			//intMove=self.travel; 
 		}
 		//no more data to show, so leave buffer where they are
-		if(arrData.length===0 && intMove===0 && self.config.stream===true){ 
-			console.log('EOF');
+		if(arrData.length===0 && self.travel===0 && self.config.stream===true){ 
+			//console.log('EOF');
 			self.config.fnEndRecords(); 
 			self.config.stream=false; 
 		}
@@ -103,15 +110,15 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 					self.newest.data=self.arrCache.slice(0,self.stats.total); 
 				}
 				else{ 
-					//console.log('set newest to incoming data, total larger than view');
-					self.newest.data=self.arrCache.slice(0+intMove,self.newest.size); 
-					//console.log(self.newest.data);
+					var intEnd = self.newest.size+self.travel;
+					self.newest.data=self.arrCache.slice(self.travel,intEnd); 
+					//console.log(self.newest.data,self.travel,self.newest.size+self.travel,self.arrCache.length);
 				}
 			}
 			if(self.config.oldest!==false){
 				if(self.stats.total < self.oldest.size){ self.oldest.data=self.arrCache.slice(0,self.stats.total); }
-				else if(self.stats.total < self.config.size){ self.oldest.data=self.arrCache.slice(self.stats.total-self.oldest.size+intMove,self.oldest.size); }
-				else{ self.oldest.data=self.arrCache.slice(self.config.size-self.oldest.size+intMove,self.oldest.size); }	 
+				else if(self.stats.total < self.config.size){ self.oldest.data=self.arrCache.slice(self.stats.total-self.oldest.size+self.travel,self.oldest.size+self.travel); }
+				else{ self.oldest.data=self.arrCache.slice(self.config.size-self.oldest.size+self.travel); }	 
 			}
 		}
 	};

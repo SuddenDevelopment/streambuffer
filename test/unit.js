@@ -3,11 +3,10 @@ var should        = require("should");
 var streambuffer   = require("../index.js");
 
 describe('functions test', function () {
- this.timeout(6000);
+ this.timeout(9000);
  it('init and populate', function (done) {
     
-    var objCache=new streambuffer();
-    var arrView=objCache.newest.data;
+    var objCache=new streambuffer({newest:{size:20}});
     var arrData=[];
     for(i=0;i<200;i++){ arrData.push({someKey:i});}
     objCache.addData(arrData);
