@@ -67,7 +67,7 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 			var intKeep = self.config.size-intCount;
 			//create the new array from what's new and what's kept
 			//move the records we are keeping
-			for(i=0;i<intKeep;i++){ self.arrCache[intKeep-i]=arrData[i]; }
+			for(i=0;i<intKeep;i++){ self.arrCache[intCount+i]=self.arrCache[i]; }
 			//add in the new ones
 			for(i=0;i<intCount;i++){ self.arrCache[i]=arrData[i]; }
 		}
