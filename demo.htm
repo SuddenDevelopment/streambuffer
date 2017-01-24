@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html ng-app="appMain">
+<head>
+	<title> StreamBuffer Demo</title>
+	 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.1/angular-material.min.css">
+	<style>
+		html,body{margin:0;padding:0;}
+	</style>
+</head>
+<body ng-controller='controllerMain'>
+<div layout="row">
+	<md-button ng-click="trickleIn()" class="md-raised md-primary">Trickle In</md-button>
+	<md-button ng-click="addBatch()" class="md-raised md-primary">Add Batch</md-button>
+</div>
+Adding {{arrData.length}} Records
+<table style="border:1px solid #aaa;">
+	<tr>
+		<td valign="top" style="border-right:1px solid #aaa;">
+			Newest
+			<div layout="column" style="border-top:1px solid #aaa;">
+				<div ng-repeat="objItem in arrNewest track by $index"> {{objItem}} </div>
+			</div>
+		</td>
+		<td valign="top">
+			Oldest
+			<div layout="column" style="border-top:1px solid #aaa;">
+				<div ng-repeat="objItem in arrOldest track by $index"> {{objItem}} </div>
+			</div>
+		</td>
+	</tr>
+</table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-animate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-aria.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.1/angular-material.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+<script src="index.js"></script>
+<script>
+var app = angular.module('appMain', ['ngMaterial']).config(function($mdThemingProvider) {
+	  $mdThemingProvider.theme('default').dark();
+	});
+app.controller('controllerMain', function($scope) {
+	var objBuffer = new streambuffer({oldest:{size:20},newest:{size:20}});
+	$scope.arrNewest = objBuffer.newest.data;
+	$scope.arrOldest = objBuffer.oldest.data;
+	$scope.arrData = [];
+	var objInterval = {};
+
+	$scope.intIndex = 0;
+
+	$scope.trickleIn = function(){
+		clearInterval(objInterval);
+		objInterval = setInterval(function(){
+			$scope.arrData=[$scope.intIndex];
+			objBuffer.addData($scope.arrData);
+			$scope.intIndex++;
+			$scope.$evalAsync();
+		},500);
+	};
+	$scope.addBatch = function(){
+		clearInterval(objInterval);
+		//throw some data together
+		var intRepeat= Math.random() * (1000 - 1) + 1;
+		for(var i=0;i<intRepeat;i++){ $scope.intIndex++; $scope.arrData[i]=$scope.intIndex; }
+		//dump it in
+		objBuffer.addData($scope.arrData);
+		//console.log($scope.arrData);
+	};
+	
+	var objRenderInterval = setInterval(function(){ $scope.$evalAsync(); },500);
+
+});
+</script>
+</body>
+</html>

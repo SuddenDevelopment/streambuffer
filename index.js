@@ -14,7 +14,7 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 			,newest:{size:20}
 			,oldest:false
 			,stream:true
-			,fnEndRecords:function(){console.log('no more records to stream in');}
+			,fnEndRecords:function(){ self.restart(); }
 		};
 	}else{
 		//check config and add defaults
@@ -23,7 +23,7 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 		if(typeof objConfig.newest==='undefined'){objConfig.newest=false;}
 		if(typeof objConfig.oldest==='undefined'){objConfig.oldest=false;}
 		if(typeof objConfig.stream==='undefined'){objConfig.stream=true;}
-		if(typeof objConfig.fnEndRecords==='undefined'){ objConfig.fnEndRecords=function(){console.log('no more records to stream in');}; }
+		if(typeof objConfig.fnEndRecords==='undefined'){ objConfig.fnEndRecords=function(){ self.restart();; } }
 	}
 	if(objConfig.newest!==false){ 
 			this.newest={}; 
@@ -128,7 +128,7 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 	}
 	this.stop=function(){ this.config.stream=false; }
 	//start the trickle over with whats in cache
-	this.restart=function(){ this.travel=0; this.config.stream=true; fnStreamRecords(); }
+	this.restart=function(){ this.travel=0; this.config.stream=true; }
 	this.go=function(){
 		//dont want to fire this unless it was stopped, lets be sure
 		if(this.config.stream===false){
