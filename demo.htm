@@ -9,10 +9,15 @@
 </head>
 <body ng-controller='controllerMain'>
 <div layout="row">
+	<md-button ng-click="addOne()" class="md-raised md-primary">Add One</md-button>
 	<md-button ng-click="trickleIn()" class="md-raised md-primary">Trickle In</md-button>
 	<md-button ng-click="addBatch()" class="md-raised md-primary">Add Batch</md-button>
+	<md-button ng-click="addBatches()" class="md-raised md-primary">Add Batches</md-button>
+	<md-button ng-click="stop()" class="md-raised md-warn">Stop</md-button>
+	<md-button ng-click="refresh()" class="md-raised md-warn">Refresh</md-button>
 </div>
 Adding {{arrData.length}} Records
+<div layout="row">
 <table style="border:1px solid #aaa;">
 	<tr>
 		<td valign="top" style="border-right:1px solid #aaa;">
@@ -29,6 +34,10 @@ Adding {{arrData.length}} Records
 		</td>
 	</tr>
 </table>
+<div class="md-padding">
+	<div ng-repeat="stat in arrStats track by $index">{{stat}}</div>
+</div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-animate.min.js"></script>
@@ -41,13 +50,23 @@ var app = angular.module('appMain', ['ngMaterial']).config(function($mdThemingPr
 	  $mdThemingProvider.theme('default').dark();
 	});
 app.controller('controllerMain', function($scope) {
-	var objBuffer = new streambuffer({oldest:{size:20},newest:{size:20}});
+	var objBuffer = new streambuffer({
+		 oldest:{size:20}
+		,newest:{size:20}
+		,debug:true
+	});
 	$scope.arrNewest = objBuffer.newest.data;
 	$scope.arrOldest = objBuffer.oldest.data;
 	$scope.arrData = [];
+	$scope.arrStats =[];
 	var objInterval = {};
 
 	$scope.intIndex = 0;
+
+	$scope.addOne = function(){
+		objBuffer.addData([$scope.intIndex]);
+		$scope.intIndex++;
+	}
 
 	$scope.trickleIn = function(){
 		clearInterval(objInterval);
@@ -55,7 +74,6 @@ app.controller('controllerMain', function($scope) {
 			$scope.arrData=[$scope.intIndex];
 			objBuffer.addData($scope.arrData);
 			$scope.intIndex++;
-			$scope.$evalAsync();
 		},500);
 	};
 	$scope.addBatch = function(){
@@ -65,10 +83,31 @@ app.controller('controllerMain', function($scope) {
 		for(var i=0;i<intRepeat;i++){ $scope.intIndex++; $scope.arrData[i]=$scope.intIndex; }
 		//dump it in
 		objBuffer.addData($scope.arrData);
-		//console.log($scope.arrData);
+		console.log($scope.arrData[0],'=>',$scope.arrData[intRepeat-1]);
 	};
+	$scope.addBatches = function(){
+		clearInterval(objInterval);
+		objInterval = setInterval(function(){
+			var intRepeat= 500;
+			for(var i=0;i<intRepeat;i++){ $scope.intIndex++; $scope.arrData[i]=$scope.intIndex; }
+			objBuffer.addData($scope.arrData);
+			
+		},500);
+	};
+	$scope.stop = function(){
+		clearInterval(objInterval);
+		clearInterval(objRenderInterval);
+	}
+
+	$scope.refresh = function(){
+		$scope.arrStats.push(angular.copy(objBuffer.stats));
+		$scope.$evalAsync(); 
+	}
 	
-	var objRenderInterval = setInterval(function(){ $scope.$evalAsync(); },500);
+	var objRenderInterval = setInterval(function(){ 
+		$scope.arrStats.push(angular.copy(objBuffer.stats));
+		$scope.$evalAsync(); 
+	},500);
 
 });
 </script>
