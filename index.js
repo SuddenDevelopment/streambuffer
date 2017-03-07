@@ -125,13 +125,12 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 		if(self.fDebug===true){ console.log('set views for ', intCount, ' records'); };
 		if(intCount > 0){self.travel=0;}
 			if(self.newest!==false){
-				if(self.stats.total < self.newest.size){ 
+				if(self.stats.total < self.newest.size){
 					for(i=0;i<self.stats.total;i++){ 
 						self.newest.data[i]=self.arrCache[(self.config.size-1)-i];
 						//if(self.fDebug===true){ console.log('1: ', (self.config.size-1)-i); };
 					} 
-				}
-				else{
+				}else{
 					if(self.fDebug===true){ console.log('set view from: ',self.config.size-self.newest.size, ' to: ', self.config.size, ' = ', self.arrCache[(self.config.size-self.travel-1)]); }
 					for(i=0;i<self.newest.size;i++){
 						self.newest.data[i]=self.arrCache[(self.config.size-self.travel-1)-i];
