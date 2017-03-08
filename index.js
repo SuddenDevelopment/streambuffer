@@ -112,11 +112,11 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 	};
 	var fnTravel=function(){
 		self.travel++;
-		if(self.config.newest!==false){ self.newest.data.push(self.arrCache[self.config.size-self.newest.size-self.travel]); self.newest.data.shift(); }
+		if(self.config.newest!==false && self.stats.total > self.newest.size && self.config.size > (self.newest.size+self.travel) && self.stats.total < (self.newest.size+self.travel) ){ self.newest.data.push(self.arrCache[self.config.size-self.newest.size-self.travel]); self.newest.data.shift(); }
 		var intOldestStart=0+self.travel; if(self.stats.total<self.config.size){ 
 			intOldestStart=self.config.size-self.stats.total+self.newest.size+self.travel;
 		}
-		if(self.config.oldest!==false){ self.oldest.data.push(self.arrCache[intOldestStart]); self.oldest.data.shift(); }
+		if(self.config.oldest!==false && self.stats.total > self.oldest.size){ self.oldest.data.push(self.arrCache[intOldestStart]); self.oldest.data.shift(); }
 	};
 	var fnSetViews=function(arrData){
 		if(typeof arrData === 'undefined'){ var arrData=[]; }
