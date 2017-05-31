@@ -20,18 +20,19 @@ Adding {{arrData.length}} Records
 <div layout="row">
 <table style="border:1px solid #aaa;">
 	<tr>
-		<td valign="top" style="border-right:1px solid #aaa;">
-			Newest
-			<div layout="column" style="border-top:1px solid #aaa;">
-				<div ng-repeat="objItem in arrNewest track by $index"> {{objItem}} </div>
-			</div>
-		</td>
 		<td valign="top">
 			Oldest
 			<div layout="column" style="border-top:1px solid #aaa;">
 				<div ng-repeat="objItem in arrOldest track by $index"> {{objItem}} </div>
 			</div>
 		</td>
+		<td valign="top" style="border-right:1px solid #aaa;">
+			Newest
+			<div layout="column" style="border-top:1px solid #aaa;">
+				<div ng-repeat="objItem in arrNewest track by $index"> {{objItem}} </div>
+			</div>
+		</td>
+		
 	</tr>
 </table>
 <div class="md-padding">
@@ -43,7 +44,7 @@ Adding {{arrData.length}} Records
 <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-animate.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-aria.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.1/angular-material.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/immutable/3.8.1/immutable.min.js"></script>
 <script src="index.js"></script>
 <script>
 var app = angular.module('appMain', ['ngMaterial']).config(function($mdThemingProvider) {
@@ -55,8 +56,7 @@ app.controller('controllerMain', function($scope) {
 		,newest:{size:20}
 		,debug:true
 	});
-	$scope.arrNewest = objBuffer.newest.data;
-	$scope.arrOldest = objBuffer.oldest.data;
+	
 	$scope.arrData = [];
 	$scope.arrStats =[];
 	var objInterval = {};
@@ -66,7 +66,9 @@ app.controller('controllerMain', function($scope) {
 	$scope.addOne = function(){
 		objBuffer.addData([$scope.intIndex]);
 		$scope.intIndex++;
-	}
+		$scope.arrNewest = objBuffer.newest.data;
+		$scope.arrOldest = objBuffer.oldest.data;
+	};
 
 	$scope.trickleIn = function(){
 		clearInterval(objInterval);
@@ -80,10 +82,12 @@ app.controller('controllerMain', function($scope) {
 		clearInterval(objInterval);
 		//throw some data together
 		var intRepeat= Math.random() * (1000 - 1) + 1;
-		for(var i=0;i<intRepeat;i++){ $scope.intIndex++; $scope.arrData[i]=$scope.intIndex; }
+		$scope.arrData=[];
+		for(var i=0;i<intRepeat;i++){ $scope.arrData[i]=$scope.intIndex; $scope.intIndex++;}
 		//dump it in
 		objBuffer.addData($scope.arrData);
-		console.log($scope.arrData[0],'=>',$scope.arrData[intRepeat-1]);
+		$scope.arrNewest = objBuffer.newest.data;
+		$scope.arrOldest = objBuffer.oldest.data;
 	};
 	$scope.addBatches = function(){
 		clearInterval(objInterval);
@@ -97,15 +101,17 @@ app.controller('controllerMain', function($scope) {
 	$scope.stop = function(){
 		clearInterval(objInterval);
 		clearInterval(objRenderInterval);
-	}
+	};
 
 	$scope.refresh = function(){
 		$scope.arrStats.push(angular.copy(objBuffer.stats));
 		$scope.$evalAsync(); 
-	}
+	};
 	
 	var objRenderInterval = setInterval(function(){ 
 		$scope.arrStats.push(angular.copy(objBuffer.stats));
+		$scope.arrNewest = objBuffer.newest.data;
+		$scope.arrOldest = objBuffer.oldest.data;
 		$scope.$evalAsync(); 
 	},500);
 
