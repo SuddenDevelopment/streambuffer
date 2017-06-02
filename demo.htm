@@ -64,10 +64,11 @@ app.controller('controllerMain', function($scope) {
 	$scope.intIndex = 0;
 
 	$scope.addOne = function(){
-		objBuffer.addData([$scope.intIndex]);
+		objBuffer.addData([$scope.intIndex],function(arrNew,arrOld){
+			$scope.arrNewest = arrNew;
+			$scope.arrOldest = arrOld;
+		});
 		$scope.intIndex++;
-		$scope.arrNewest = objBuffer.newest.data;
-		$scope.arrOldest = objBuffer.oldest.data;
 	};
 
 	$scope.trickleIn = function(){
@@ -85,9 +86,11 @@ app.controller('controllerMain', function($scope) {
 		$scope.arrData=[];
 		for(var i=0;i<intRepeat;i++){ $scope.arrData[i]=$scope.intIndex; $scope.intIndex++;}
 		//dump it in
-		objBuffer.addData($scope.arrData);
-		$scope.arrNewest = objBuffer.newest.data;
-		$scope.arrOldest = objBuffer.oldest.data;
+		objBuffer.addData($scope.arrData,function(arrNew,arrOld){
+			$scope.arrNewest = arrNew;
+			$scope.arrOldest = arrOld;
+		});
+		
 	};
 	$scope.addBatches = function(){
 		clearInterval(objInterval);
@@ -95,7 +98,6 @@ app.controller('controllerMain', function($scope) {
 			var intRepeat= 500;
 			for(var i=0;i<intRepeat;i++){ $scope.intIndex++; $scope.arrData[i]=$scope.intIndex; }
 			objBuffer.addData($scope.arrData);
-			
 		},500);
 	};
 	$scope.stop = function(){
@@ -110,8 +112,10 @@ app.controller('controllerMain', function($scope) {
 	
 	var objRenderInterval = setInterval(function(){ 
 		$scope.arrStats.push(angular.copy(objBuffer.stats));
-		$scope.arrNewest = objBuffer.newest.data;
-		$scope.arrOldest = objBuffer.oldest.data;
+		objBuffer.move(1,function(arrNew,arrOld){
+			$scope.arrNewest = arrNew;
+			$scope.arrOldest = arrOld;
+		})
 		$scope.$evalAsync(); 
 	},500);
 

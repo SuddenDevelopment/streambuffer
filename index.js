@@ -16,8 +16,6 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 			,interval:500
 			,newest:{size:20}
 			,oldest:false
-			,stream:true
-			,fnEndRecords:function(){ self.restart(); }
 			,debug:false
 		};
 	}else{
@@ -26,7 +24,6 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 		if(typeof objConfig.interval==='undefined'){objConfig.interval=500;}
 		if(typeof objConfig.newest==='undefined'){objConfig.newest=false;}
 		if(typeof objConfig.oldest==='undefined'){objConfig.oldest=false;}
-		if(typeof objConfig.stream==='undefined'){objConfig.stream=true;}
 		if(typeof objConfig.debug==='undefined'){objConfig.debug=false;}
 		if(typeof objConfig.fnEndRecords==='undefined'){ objConfig.fnEndRecords=function(){ self.config.stream===false; } }
 	}
@@ -49,13 +46,12 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 	this.stats = {total:0,current:0,last:0,count:0,avg:0,tsUpdated:0};
 	this.tsFirst = 0;
 	this.tsLast = 0;
-	this.tsMoved = 0;
 	this.travel=0;
 	this.travelOld=0;
 	this.fDebug=objConfig.debug;
 //----====|| METHODS ||====----\\
 	this.setConfig = function(){};
-	this.addData = function(arrData){
+	this.addData = function(arrData,fnCallback){
 		if(arrData.constructor !== Array){ arrData=[arrData]; }
 		var intCount=arrData.length;
 		self.stats.total = self.stats.total + intCount;
@@ -76,6 +72,10 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 			self.travelOld=0;
 		}
 		fnSetViews();
+		//send callback
+		if(typeof fnCallback !== 'undefined'){
+			fnCallback(self.newest.data,self.oldest.data);
+		}
 		//are we streaming?
 		if(self.stats.total === self.stats.current && self.config.stream===true){ 
 			fnStreamRecords();
@@ -97,21 +97,12 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 			}
 		}
 	};
-	var fnStreamRecords=function(){
-		//if there are new records this time around, no need to mess with advancing
-		var tsNow = Date.now();
-		//data hasnt been added since last interval so start advancing
-		//console.log(tsNow, self.config.interval, self.stats.tsUpdated+self.config.interval, self.stats.tsUpdated);
-		if(tsNow > self.tsMoved+self.config.interval){ 
-			//MOVE
-			self.tsMoved=tsNow;
-			self.travel++;
-			fnSetViews();
-		}
-		//else{ self.travel=0; }
-		//call this function again at the set time	
-		if(self.config.stream===true){ 
-			setTimeout(function(){ fnStreamRecords(); }, self.config.interval);
+	this.move=function(intDistance,fnCallback){
+		self.travel+=intDistance;
+		fnSetViews();
+		//send callback
+		if(typeof fnCallback !== 'undefined'){
+			fnCallback(self.newest.data,self.oldest.data);
 		}
 	};
 }
