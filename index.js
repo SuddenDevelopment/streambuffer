@@ -76,10 +76,6 @@ var streambuffer = function(objConfig){ 'use strict'; var self=this;
 		if(typeof fnCallback !== 'undefined'){
 			fnCallback(self.newest.data,self.oldest.data);
 		}
-		//are we streaming?
-		if(self.stats.total === self.stats.current && self.config.stream===true){ 
-			fnStreamRecords();
-		}
 	};
 	var fnSetViews=function(){
 		if(self.config.newest!==false){
