@@ -6,6 +6,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
 import { SharedModule } from './shared/shared.module';
 import { HomeModule } from './home/home.module';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -16,6 +17,7 @@ import { HomeModule } from './home/home.module';
     HttpModule,
     SharedModule,
     HomeModule,
+    CommonModule,
     RouterModule.forRoot(rootRouterConfig, { useHash: true })
   ],
   bootstrap: [ AppComponent ]
