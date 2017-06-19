@@ -1,32 +1,24 @@
 <div>
-  <div layout="row">
-      <sbfr-button
-       [buttonConfig]="buttonConfig[0]"
-       (onButtonClick)="performAction($event)">
-      </sbfr-button>
+    <div layout="row" class="display-row button-section">
+        <div *ngFor="let config of buttonConfig">
+            <div class="display-cell">
           <sbfr-button
-           [buttonConfig]="buttonConfig[1]"
+           [buttonConfig]="config"
            (onButtonClick)="performAction($event)">
           </sbfr-button>
-              <sbfr-button
-               [buttonConfig]="buttonConfig[2]"
-               (onButtonClick)="performAction($event)">
-              </sbfr-button>
-                  <sbfr-button
-                   [buttonConfig]="buttonConfig[3]"
-                   (onButtonClick)="performAction($event)">
-                  </sbfr-button>
-                      <sbfr-button
-                       [buttonConfig]="buttonConfig[4]"
-                       (onButtonClick)="performAction($event)">
-                      </sbfr-button>
-                          <sbfr-button
-                           [buttonConfig]="buttonConfig[5]"
-                           (onButtonClick)="performAction($event)">
-                          </sbfr-button>
-  </div>
-  <div layout="row">
-    <sbfr-records-table></sbfr-records-table>
-    <sbfr-log-status-pannel></sbfr-log-status-pannel>
-  </div>
+        </div></div>
+    </div>
+    <div layout="row" class="display-row">
+        <div layout="column" class="display-cell records-section">
+            <sbfr-records-table
+                    [arrOldest]="arrOldest"
+                    [arrNewest]="arrNewest">
+            </sbfr-records-table>
+        </div>
+        <div layout="column" class="display-cell stats-section">
+            <sbfr-log-status-pannel
+                    [bufferLogsStats]="arrStats">
+            </sbfr-log-status-pannel>
+        </div>
+    </div>
 </div>

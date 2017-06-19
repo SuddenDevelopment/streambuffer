@@ -1,3 +1,11 @@
 <div class="md-padding">
 	<div>Stats will come here</div>
+	<div *ngFor="let stat of bufferLogsStats">
+		<span>Total: {{stat.total}}</span>
+		<span>Current: {{stat.current}}</span>
+		<span>Last: {{stat.last}}</span>
+		<span>Count: {{stat.count}}</span>
+		<span>Avg: {{stat.avg}}</span>
+		<span>TsUpdated: {{stat.tsUpdated}}</span>
+	</div>
 </div>

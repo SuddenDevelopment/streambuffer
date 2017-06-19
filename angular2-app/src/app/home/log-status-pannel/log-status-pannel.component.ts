@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 
 @Component({
   selector: 'sbfr-log-status-pannel',
@@ -6,4 +6,8 @@ import {Component} from '@angular/core';
   templateUrl: './log-status-pannel.component.html'
 })
 export class LogStatusPannelComponent {
+
+  @Input()
+  public bufferLogsStats: Array<any> = [];
+
 }

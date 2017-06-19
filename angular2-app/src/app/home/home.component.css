@@ -1,0 +1,21 @@
+.display-row{
+    display: table-row;
+}
+
+.display-cell {
+    display: table-cell;
+}
+
+.records-section {
+  width: 30%;
+  float: left;
+}
+
+.stats-section {
+  width: 70%;
+  float: right;
+}
+
+.button-section div{
+  float: left;
+}
