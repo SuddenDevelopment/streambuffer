@@ -2,6 +2,8 @@
 
 This is a library to buffer incoming data streams, and trickle them out to the user based on a few options.
 
+![demo](demo.png)
+
 ## Requirements
 
 1. speed / performance maximize the numebr of records it can handle per second
